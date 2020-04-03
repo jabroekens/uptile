@@ -14,8 +14,8 @@ public class Uptile extends GameEngine {
 		PApplet.runSketch(new String[] { "com.github.jabroekens.uptile.Uptile" }, new Uptile());
 	}
 
-	private Level[] levels = { new IntroLevel(this) };
-	private Player player = new Player(this);
+	private final Level[] levels = { new IntroLevel(this) };
+	private final Player player = new Player(this);
 	private int lastLevel = 0;
 
 	@Override
@@ -25,11 +25,16 @@ public class Uptile extends GameEngine {
 
 	@Override
 	public void update() {
-		if (player.getLevel() != lastLevel) {
+		int newLevel = player.getLevel();
+		if (newLevel != lastLevel && newLevel < levels.length) {
 			levels[lastLevel].unload();
-			levels[player.getLevel()].load();
-			lastLevel = player.getLevel();
+			levels[newLevel].load();
+			lastLevel = newLevel;
 		}
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 }

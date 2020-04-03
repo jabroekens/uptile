@@ -12,29 +12,31 @@ import processing.core.PVector;
 
 public class BreakableFloorTile extends FloorTile implements IAlarmListener {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("tile_breakable.png"));
+	public static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("tile_breakable.png"));
 
-	private final GameEngine engine;
+	private GameEngine engine;
 	private Alarm alarm;
 
-	public BreakableFloorTile(GameEngine engine) {
-		super(BreakableFloorTile.sprite);
-		this.engine = Objects.requireNonNull(engine, "engine cannot be null");
+	public BreakableFloorTile(Sprite sprite) {
+		super(sprite);
 	}
 
 	@Override
 	public void triggerAlarm(String alarmName) {
-		try {
-			PVector vector = engine.getTileMap().getTilePixelLocation(this);
-			engine.getTileMap().setTile((int) vector.x / BreakableFloorTile.sprite.getWidth(),
-					(int) vector.y / BreakableFloorTile.sprite.getHeight(), -1);
-		} catch (TileNotFoundException e) {
-			// Silently ignore; we're just checking if the tile still exists
+		if (engine != null) {
+			try {
+				PVector vector = engine.getTileMap().getTilePixelLocation(this);
+				engine.getTileMap().setTile((int) vector.x / BreakableFloorTile.sprite.getWidth(),
+						(int) vector.y / BreakableFloorTile.sprite.getHeight(), -1);
+			} catch (TileNotFoundException e) {
+				// Silently ignore; we're just checking if the tile still exists
+			}
 		}
 	}
 
-	public void breakTile() {
+	public void breakTile(GameEngine engine) {
 		if (alarm == null || !alarm.isRunning()) {
+			this.engine = Objects.requireNonNull(engine, "engine cannot be null");
 			Alarm alarm = new Alarm(null, 2);
 			alarm.addTarget(this);
 			alarm.start();

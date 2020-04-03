@@ -6,13 +6,9 @@ import nl.han.ica.oopg.tile.Tile;
 
 public class FloorTile extends Tile {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("tile.png"));
+	public static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("tile.png"));
 
-	public FloorTile() {
-		super(FloorTile.sprite);
-	}
-
-	protected FloorTile(Sprite sprite) {
+	public FloorTile(Sprite sprite) {
 		super(sprite);
 	}
 

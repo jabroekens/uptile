@@ -13,11 +13,12 @@ import nl.han.ica.oopg.objects.AnimatedSpriteObject;
 import nl.han.ica.oopg.objects.GameObject;
 import nl.han.ica.oopg.objects.Sprite;
 import nl.han.ica.oopg.tile.TileMap;
+import processing.core.PConstants;
 import processing.core.PVector;
 
 public class Player extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("player.png"));
+	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("bunny.png"));
 
 	private final GameEngine engine;
 	private int score;
@@ -27,6 +28,8 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 		super(Player.sprite, 9);
 		this.engine = Objects.requireNonNull(engine, "engine cannot be null");
 		setCurrentFrameIndex(2);
+		setFriction(0.05F);
+		setGravity(0.1F);
 	}
 
 	public int getScore() {
@@ -89,7 +92,19 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 
 	@Override
 	public void keyPressed(int keyCode, char key) {
-		// TODO
+		switch (keyCode) {
+		case PConstants.LEFT:
+			super.setDirectionSpeed(270, 5);
+			break;
+		case PConstants.RIGHT:
+			super.setDirectionSpeed(90, 5);
+			break;
+		case PConstants.UP:
+			super.setDirectionSpeed(0, 5);
+			break;
+		default:
+			break;
+		}
 	}
 
 }
