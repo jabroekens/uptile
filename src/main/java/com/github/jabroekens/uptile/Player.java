@@ -1,35 +1,181 @@
 package com.github.jabroekens.uptile;
 
 import java.util.List;
-import java.util.Objects;
 
+import com.github.jabroekens.uptile.monsters.Monster;
+import com.github.jabroekens.uptile.tiles.BreakableFloorTile;
 import com.github.jabroekens.uptile.tiles.FloorTile;
+import nl.han.ica.oopg.alarm.IAlarmListener;
 import nl.han.ica.oopg.collision.CollidedTile;
 import nl.han.ica.oopg.collision.ICollidableWithGameObjects;
 import nl.han.ica.oopg.collision.ICollidableWithTiles;
-import nl.han.ica.oopg.engine.GameEngine;
 import nl.han.ica.oopg.exceptions.TileNotFoundException;
 import nl.han.ica.oopg.objects.AnimatedSpriteObject;
 import nl.han.ica.oopg.objects.GameObject;
 import nl.han.ica.oopg.objects.Sprite;
+import nl.han.ica.oopg.sound.Sound;
+import nl.han.ica.oopg.tile.Tile;
 import nl.han.ica.oopg.tile.TileMap;
-import processing.core.PConstants;
 import processing.core.PVector;
 
-public class Player extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles {
+public class Player extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles, IAlarmListener, Audible {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("bunny.png"));
+	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/bunny.png"));
+	private static final float[] SPEEDS = { 3.0F, 8.0F };
 
-	private final GameEngine engine;
-	private int score;
-	private int level;
+	private int score, level;
+	private final Uptile uptile;
+	private boolean canJump = true, canMove;
 
-	public Player(GameEngine engine) {
-		super(Player.sprite, 9);
-		this.engine = Objects.requireNonNull(engine, "engine cannot be null");
+	private final Alarm[] alarms = {
+			new Alarm("left", Player.SPEEDS[0] / 10.0D),
+			new Alarm("right", Player.SPEEDS[0] / 10.0D)
+	};
+
+	private final Sound[] sounds;
+
+	public Player(Uptile uptile, int spawnX, int spawnY) {
+		super(Player.SPRITE, 7);
+		this.uptile = uptile;
+		sounds = new Sound[] {
+				new Sound(uptile, Uptile.MEDIA_URL.concat("audio/walking.mp3")),
+				new Sound(uptile, Uptile.MEDIA_URL.concat("audio/jump.mp3")),
+				new Sound(uptile, Uptile.MEDIA_URL.concat("audio/death.mp3"))
+		};
+
+		setX(spawnX);
+		setY(spawnY);
+
 		setCurrentFrameIndex(2);
-		setFriction(0.05F);
-		setGravity(0.1F);
+		setFriction(0.02F);
+		setGravity(0.2F);
+
+		setxSpeed(Player.SPEEDS[0]);
+		setySpeed(Player.SPEEDS[1]);
+
+		alarms[0].addTarget(this);
+		alarms[0].addTarget(this);
+	}
+
+	@Override
+	public void update() {
+		if (getX() <= 0) {
+			setX(0);
+		}
+
+		if (getX() >= uptile.getView().getWorldWidth() - getWidth()) {
+			setX(uptile.getViewWidth() - getWidth());
+		}
+
+		if (getY() <= 0) {
+			setY(0);
+		}
+
+		if (getY() >= uptile.getView().getWorldHeight() - getHeight()) {
+			respawn();
+		}
+	}
+
+	@Override
+	public void gameObjectCollisionOccurred(List<GameObject> collidedGameObjects) {
+		for (GameObject obj : collidedGameObjects) {
+			if (obj instanceof Launchpad) {
+				canMove = true;
+			}
+
+			if (obj instanceof Monster) {
+				sounds[2].play(0);
+			}
+		}
+	}
+
+	@Override
+	public void tileCollisionOccurred(List<CollidedTile> collidedTiles) {
+		TileMap map = uptile.getTileMap();
+
+		for (CollidedTile ct : collidedTiles) {
+			Tile tile = ct.getTile();
+
+			if (tile instanceof FloorTile) {
+				try {
+					PVector vector = map.getTilePixelLocation(tile);
+
+					switch (ct.getCollisionSide()) {
+					case INSIDE:
+					case TOP:
+						setY(vector.y - getHeight());
+						setySpeed(Player.SPEEDS[1]);
+
+						if (tile instanceof BreakableFloorTile) {
+							((BreakableFloorTile) tile).breakTile(uptile);
+						}
+
+						if (getCurrentFrameIndex() == 1) {
+							setCurrentFrameIndex(2);
+						}
+
+						canJump = true;
+						canMove = true;
+						break;
+					case LEFT:
+						setX(vector.x - getWidth());
+						break;
+					case RIGHT:
+						setX(vector.x + map.getTileSize());
+						break;
+					default:
+						break; // We've handled all the relevant cases
+					}
+				} catch (TileNotFoundException e) {
+					// Silently ignore; we're just checking if the tile exists
+				}
+			}
+		}
+	}
+
+	@Override
+	public void keyPressed(int keyCode, char key) {
+		switch (key) {
+		case 'a':
+			if (canMove) {
+				setDirectionSpeed(-90, Player.SPEEDS[0]);
+				setCurrentFrameIndex(6);
+
+				alarms[0].startIfNotRunning();
+				sounds[0].play(0);
+				canMove = false;
+			}
+			break;
+		case 'd':
+			if (canMove) {
+				setDirectionSpeed(90, Player.SPEEDS[0]);
+				setCurrentFrameIndex(3);
+
+				alarms[1].startIfNotRunning();
+				sounds[0].play(0);
+				canMove = false;
+			}
+			break;
+		case ' ':
+			if (canJump) {
+				setDirectionSpeed(0, Player.SPEEDS[1]);
+				setCurrentFrameIndex(1);
+				sounds[1].play(0);
+				canJump = false;
+			}
+			break;
+		default:
+			break; // We've handled all the relevant cases
+		}
+	}
+
+	@Override
+	public void triggerAlarm(String alarmName) {
+		if (alarmName.equalsIgnoreCase("left") && getCurrentFrameIndex() == 6) {
+			setCurrentFrameIndex(5);
+		} else if (alarmName.equalsIgnoreCase("right") && getCurrentFrameIndex() == 3) {
+			setCurrentFrameIndex(4);
+		}
 	}
 
 	public int getScore() {
@@ -51,59 +197,15 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 	public void respawn() {
 		score = 0;
 		level = 0;
+		setxSpeed(0);
+		setySpeed(0);
+		uptile.reloadLevel();
 	}
 
 	@Override
-	public void update() {
-		// TODO
-	}
-
-	@Override
-	public void gameObjectCollisionOccurred(List<GameObject> collidedGameObjects) {
-		// Nothing to do
-	}
-
-	@Override
-	public void tileCollisionOccurred(List<CollidedTile> collidedTiles) {
-		for (CollidedTile tile : collidedTiles) {
-			if (tile.getTile() instanceof FloorTile) {
-				try {
-					TileMap map = engine.getTileMap();
-					PVector vector = map.getTilePixelLocation(tile.getTile());
-
-					switch (tile.getCollisionSide()) {
-					case TOP:
-						super.setY(vector.y - super.getHeight());
-					case LEFT:
-						super.setX(vector.x - super.getWidth());
-						break;
-					case RIGHT:
-						super.setX(vector.x + map.getTileSize());
-						break;
-					default:
-						// All relevant cases are covered
-					}
-				} catch (TileNotFoundException e) {
-					// Silently ignore; we're just checking if the tile exists
-				}
-			}
-		}
-	}
-
-	@Override
-	public void keyPressed(int keyCode, char key) {
-		switch (keyCode) {
-		case PConstants.LEFT:
-			super.setDirectionSpeed(270, 5);
-			break;
-		case PConstants.RIGHT:
-			super.setDirectionSpeed(90, 5);
-			break;
-		case PConstants.UP:
-			super.setDirectionSpeed(0, 5);
-			break;
-		default:
-			break;
+	public void stopSound() {
+		for (Sound sound : sounds) {
+			sound.pause();
 		}
 	}
 

@@ -1,28 +1,33 @@
 package com.github.jabroekens.uptile.monsters;
 
 import java.util.List;
-import java.util.Objects;
 
+import com.github.jabroekens.uptile.Audible;
 import com.github.jabroekens.uptile.Player;
+import com.github.jabroekens.uptile.Uptile;
 import com.github.jabroekens.uptile.tiles.FloorTile;
 import nl.han.ica.oopg.collision.CollidedTile;
 import nl.han.ica.oopg.collision.ICollidableWithGameObjects;
 import nl.han.ica.oopg.collision.ICollidableWithTiles;
-import nl.han.ica.oopg.engine.GameEngine;
 import nl.han.ica.oopg.exceptions.TileNotFoundException;
 import nl.han.ica.oopg.objects.AnimatedSpriteObject;
 import nl.han.ica.oopg.objects.GameObject;
 import nl.han.ica.oopg.objects.Sprite;
+import nl.han.ica.oopg.sound.Sound;
+import nl.han.ica.oopg.tile.Tile;
 import nl.han.ica.oopg.tile.TileMap;
 import processing.core.PVector;
 
-public abstract class Monster extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles {
+public abstract class Monster extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles, Audible {
 
-	private GameEngine engine;
+	protected Uptile uptile;
+	protected Sound sound;
 
-	protected Monster(Sprite sprite, int totalFrames, GameEngine engine) {
-		super(Objects.requireNonNull(sprite, "sprite cannot be null"), totalFrames);
-		this.engine = Objects.requireNonNull(engine, "engine cannot be null");
+	protected Monster(Sprite sprite, int totalFrames, Uptile uptile, Sound sound) {
+		super(sprite, totalFrames);
+		this.uptile = uptile;
+		this.sound = sound;
+		sound.loop(-1);
 	}
 
 	@Override
@@ -39,31 +44,41 @@ public abstract class Monster extends AnimatedSpriteObject implements ICollidabl
 
 	@Override
 	public void tileCollisionOccurred(List<CollidedTile> collidedTiles) {
-		for (CollidedTile tile : collidedTiles) {
-			if (tile.getTile() instanceof FloorTile) {
-				try {
-					TileMap map = engine.getTileMap();
-					PVector vector = map.getTilePixelLocation(tile.getTile());
+		TileMap map = uptile.getTileMap();
 
-					switch (tile.getCollisionSide()) {
-					case TOP:
-						super.setY(vector.y - super.getHeight());
-					case BOTTOM:
-						super.setY(vector.y + super.getHeight());
-						break;
+		for (CollidedTile ct : collidedTiles) {
+			Tile tile = ct.getTile();
+
+			if (tile instanceof FloorTile) {
+				try {
+					PVector vector = map.getTilePixelLocation(tile);
+
+					switch (ct.getCollisionSide()) {
 					case LEFT:
-						super.setX(vector.x - super.getWidth());
+						setX(vector.x - getWidth());
 						break;
 					case RIGHT:
-						super.setX(vector.x + map.getTileSize());
+						setX(vector.x + map.getTileSize());
 						break;
+					case TOP:
+						setY(vector.y - getHeight());
+						break;
+					case BOTTOM:
+						setY(vector.y + map.getTileSize());
 					default:
-						// All relevant cases are covered
+						break;
 					}
 				} catch (TileNotFoundException e) {
-					// Silently ignore; we're just checking if the tile exists
+					// Ignore; it's only to check its existence
 				}
 			}
+		}
+	}
+
+	@Override
+	public void stopSound() {
+		if (sound != null) {
+			sound.pause();
 		}
 	}
 

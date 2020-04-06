@@ -1,31 +1,43 @@
 package com.github.jabroekens.uptile.levels;
 
-import java.util.Objects;
+import java.util.Iterator;
 
+import com.github.jabroekens.uptile.Audible;
 import com.github.jabroekens.uptile.Uptile;
+import com.github.jabroekens.uptile.tiles.BreakableFloorTile;
+import com.github.jabroekens.uptile.tiles.FloorTile;
+import nl.han.ica.oopg.objects.GameObject;
+import nl.han.ica.oopg.sound.Sound;
+import nl.han.ica.oopg.tile.TileMap;
+import nl.han.ica.oopg.tile.TileType;
+import nl.han.ica.oopg.view.EdgeFollowingViewport;
+import nl.han.ica.oopg.view.View;
+import processing.core.PImage;
 
-public abstract class Level {
+public abstract class Level implements Audible {
 
 	protected final Uptile uptile;
-	private final int worldWidth;
-	private final int worldHeight;
-	private final int viewWidth;
-	private final int viewHeight;
+	private final PImage backgroundImage;
+	private final Sound backgroundSound;
 
-	protected Level(Uptile uptile, int worldWidth, int worldHeight, int viewWidth, int viewHeight) {
-		this.uptile = Objects.requireNonNull(uptile, "uptile cannot be null");
-		this.worldWidth = worldWidth;
-		this.worldHeight = worldHeight;
+	private final int viewWidth, viewHeight;
+	private final int spawnX, spawnY;
+	private final int[][] tileMap;
+
+	protected Level(int viewWidth, int viewHeight, int spawnX, int spawnY, int[][] tileMap, Uptile uptile, PImage backgroundImage, String bgSoundFile) {
 		this.viewWidth = viewWidth;
 		this.viewHeight = viewHeight;
+		this.spawnX = spawnX;
+		this.spawnY = spawnY;
+		this.tileMap = tileMap;
+		this.uptile = uptile;
+		this.backgroundImage = backgroundImage;
+		backgroundSound = new Sound(uptile, bgSoundFile);
 	}
 
-	public int getWorldWidth() {
-		return worldWidth;
-	}
-
-	public int getWorldHeight() {
-		return worldHeight;
+	@Override
+	public void stopSound() {
+		backgroundSound.pause();
 	}
 
 	public int getViewWidth() {
@@ -36,8 +48,64 @@ public abstract class Level {
 		return viewHeight;
 	}
 
-	public abstract void load();
+	public int getSpawnX() {
+		return spawnX;
+	}
 
-	public abstract void unload();
+	public int getSpawnY() {
+		return spawnY;
+	}
+
+	public void load() {
+		initializeTileMap();
+		initializeView();
+
+		uptile.addGameObject(uptile.getPlayer(), spawnX, spawnY);
+		addGameObjects();
+
+		backgroundSound.loop(-1);
+	}
+
+	public void unload() {
+		Iterator<GameObject> it = uptile.getGameObjectItems().iterator();
+
+		while (it.hasNext()) {
+			GameObject obj = it.next();
+
+			if (obj instanceof Audible) {
+				((Audible) obj).stopSound();
+			}
+
+			it.remove();
+		}
+	}
+
+	private void initializeTileMap() {
+		TileType<FloorTile> floorTileType = new TileType<>(FloorTile.class, FloorTile.SPRITE);
+		TileType<BreakableFloorTile> breakableFloorTileType = new TileType<>(BreakableFloorTile.class, BreakableFloorTile.SPRITE);
+
+		TileType<?>[] tileTypes = { floorTileType, breakableFloorTileType };
+		uptile.setTileMap(new TileMap(FloorTile.SPRITE.getWidth(), tileTypes, tileMap));
+	}
+
+	private void initializeView() {
+		EdgeFollowingViewport vp = new EdgeFollowingViewport(uptile.getPlayer(), viewWidth, viewHeight);
+		vp.setTopTolerance(FloorTile.SPRITE.getHeight());
+		vp.setX(0);
+		vp.setY(backgroundImage.height - viewHeight);
+
+		View view = new View(vp, backgroundImage.width, backgroundImage.height);
+		view.setBackground(backgroundImage);
+		uptile.setView(view);
+
+		uptile.size(viewWidth, viewHeight);
+	}
+
+	protected void mapToTile(GameObject obj, int tileX, int tileY) {
+		int tileSize = uptile.getTileMap().getTileSize();
+		uptile.addGameObject(obj, tileX * tileSize, backgroundImage.height - tileY * tileSize);
+	}
+
+	protected abstract void addGameObjects();
 
 }

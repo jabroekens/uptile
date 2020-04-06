@@ -2,15 +2,15 @@ package com.github.jabroekens.uptile.powerups;
 
 import com.github.jabroekens.uptile.Player;
 import com.github.jabroekens.uptile.Uptile;
-import nl.han.ica.oopg.engine.GameEngine;
 import nl.han.ica.oopg.objects.Sprite;
+import nl.han.ica.oopg.sound.Sound;
 
 public class Carrot extends Powerup {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("item_carrot.png"));
+	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/item_carrot.png"));
 
-	public Carrot(GameEngine engine) {
-		super(Carrot.sprite, engine);
+	public Carrot(Uptile uptile) {
+		super(Carrot.SPRITE, uptile, new Sound(uptile, Uptile.MEDIA_URL.concat("audio/carrot.mp3")));
 	}
 
 	@Override

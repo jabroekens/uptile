@@ -1,36 +1,40 @@
 package com.github.jabroekens.uptile.coins;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.github.jabroekens.uptile.Alarm;
+import com.github.jabroekens.uptile.Audible;
 import com.github.jabroekens.uptile.Player;
+import com.github.jabroekens.uptile.Uptile;
 import nl.han.ica.oopg.alarm.IAlarmListener;
 import nl.han.ica.oopg.collision.ICollidableWithGameObjects;
-import nl.han.ica.oopg.engine.GameEngine;
 import nl.han.ica.oopg.objects.AnimatedSpriteObject;
 import nl.han.ica.oopg.objects.GameObject;
 import nl.han.ica.oopg.objects.Sprite;
+import nl.han.ica.oopg.sound.Sound;
 
-public abstract class Coin extends AnimatedSpriteObject implements ICollidableWithGameObjects, IAlarmListener {
+public abstract class Coin extends AnimatedSpriteObject implements ICollidableWithGameObjects, IAlarmListener, Audible {
 
-	private final GameEngine engine;
+	private final Uptile uptile;
 	private final int coinWorth;
 	private Alarm alarm;
+	private Sound sound;
 
-	protected Coin(Sprite sprite, int totalFrames, GameEngine engine, int coinWorth) {
-		super(Objects.requireNonNull(sprite, "sprite cannot be null"), totalFrames);
-		this.engine = Objects.requireNonNull(engine, "uptile cannot be null");
+	protected Coin(Sprite sprite, int totalFrames, Uptile uptile, int coinWorth) {
+		super(sprite, totalFrames);
+
+		this.uptile = uptile;
 		this.coinWorth = coinWorth;
+
+		alarm = new Alarm(null, 2.0 / totalFrames);
+		alarm.addTarget(this);
+
+		sound = new Sound(uptile, Uptile.MEDIA_URL.concat("audio/coin.mp3"));
 	}
 
 	@Override
 	public void update() {
-		if (alarm == null || !alarm.isRunning()) {
-			alarm = new Alarm(null, 2 / super.getTotalFrames());
-			alarm.addTarget(this);
-			alarm.start();
-		}
+		alarm.startIfNotRunning();
 	}
 
 	@Override
@@ -39,19 +43,26 @@ public abstract class Coin extends AnimatedSpriteObject implements ICollidableWi
 			if (obj instanceof Player) {
 				Player player = (Player) obj;
 				player.setScore(player.getScore() + coinWorth);
-				alarm.stop();
-				engine.deleteGameObject(this);
+				uptile.deleteGameObject(this);
+				sound.play(0);
 			}
 		}
 	}
 
 	@Override
 	public void triggerAlarm(String alarmName) {
-		super.nextFrame();
+		nextFrame();
 	}
 
 	public int getCoinWorth() {
 		return coinWorth;
+	}
+
+	@Override
+	public void stopSound() {
+		if (sound != null) {
+			sound.pause();
+		}
 	}
 
 }

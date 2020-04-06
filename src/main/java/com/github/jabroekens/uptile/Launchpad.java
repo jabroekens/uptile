@@ -7,35 +7,49 @@ import nl.han.ica.oopg.collision.ICollidableWithGameObjects;
 import nl.han.ica.oopg.objects.AnimatedSpriteObject;
 import nl.han.ica.oopg.objects.GameObject;
 import nl.han.ica.oopg.objects.Sprite;
+import nl.han.ica.oopg.sound.Sound;
 
-public class Launchpad extends AnimatedSpriteObject implements ICollidableWithGameObjects, IAlarmListener {
+public class Launchpad extends AnimatedSpriteObject implements ICollidableWithGameObjects, IAlarmListener, Audible {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("launchpad.png"));
+	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/launchpad.png"));
 
-	private Player player;
+	private Alarm alarm = new Alarm(null, 0.05);
+	private Sound sound;
 
-	public Launchpad() {
-		super(Launchpad.sprite, 4);
+	public Launchpad(Uptile uptile) {
+		super(Launchpad.SPRITE, 4);
+		alarm.addTarget(this);
+		sound = new Sound(uptile, Uptile.MEDIA_URL.concat("audio/launchpad.mp3"));
 	}
 
 	@Override
 	public void update() {
-		// TODO
+		if (getCurrentFrameIndex() != 0 && !alarm.isRunning()) {
+			alarm.start();
+		}
 	}
 
 	@Override
 	public void gameObjectCollisionOccurred(List<GameObject> collidedGameObjects) {
 		for (GameObject obj : collidedGameObjects) {
 			if (obj instanceof Player) {
-				player = (Player) obj;
-				// TODO
+				((Player) obj).setDirectionSpeed(0, 12F);
+				alarm.startIfNotRunning();
+				sound.play(0);
 			}
 		}
 	}
 
 	@Override
 	public void triggerAlarm(String alarmName) {
-		// TODO
+		nextFrame();
+	}
+
+	@Override
+	public void stopSound() {
+		if (sound != null) {
+			sound.pause();
+		}
 	}
 
 }

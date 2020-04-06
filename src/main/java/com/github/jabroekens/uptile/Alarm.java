@@ -24,4 +24,10 @@ public class Alarm extends nl.han.ica.oopg.alarm.Alarm {
 		return isRunning;
 	}
 
+	public void startIfNotRunning() {
+		if (!isRunning) {
+			start();
+		}
+	}
+
 }

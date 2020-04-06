@@ -5,10 +5,10 @@ import nl.han.ica.oopg.objects.Sprite;
 
 public class BronzeCoin extends Coin {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("coin_bronze.png"));
+	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/coin_bronze.png"));
 
 	public BronzeCoin(Uptile uptile) {
-		super(BronzeCoin.sprite, 6, uptile, 1);
+		super(BronzeCoin.SPRITE, 6, uptile, 1);
 	}
 
 }

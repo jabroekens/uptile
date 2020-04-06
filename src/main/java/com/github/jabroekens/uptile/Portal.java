@@ -9,10 +9,10 @@ import nl.han.ica.oopg.objects.SpriteObject;
 
 public class Portal extends SpriteObject implements ICollidableWithGameObjects {
 
-	private static final Sprite sprite = new Sprite(Uptile.MEDIA_URL.concat("portal.png"));
+	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/portal.png"));
 
 	public Portal() {
-		super(Portal.sprite);
+		super(Portal.SPRITE);
 	}
 
 	@Override
