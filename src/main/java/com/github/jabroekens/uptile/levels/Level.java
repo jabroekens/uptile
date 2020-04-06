@@ -40,22 +40,23 @@ public abstract class Level implements Audible {
 		backgroundSound.pause();
 	}
 
-	public int getViewWidth() {
-		return viewWidth;
-	}
-
-	public int getViewHeight() {
-		return viewHeight;
-	}
-
+	/**
+	 * @return player's spawn x-coordinate
+	 */
 	public int getSpawnX() {
 		return spawnX;
 	}
 
+	/**
+	 * @return player's spawn y-coordinate
+	 */
 	public int getSpawnY() {
 		return spawnY;
 	}
 
+	/**
+	 * load level
+	 */
 	public void load() {
 		initializeTileMap();
 		initializeView();
@@ -66,6 +67,9 @@ public abstract class Level implements Audible {
 		backgroundSound.loop(-1);
 	}
 
+	/**
+	 * unload level
+	 */
 	public void unload() {
 		Iterator<GameObject> it = uptile.getGameObjectItems().iterator();
 
@@ -101,11 +105,21 @@ public abstract class Level implements Audible {
 		uptile.size(viewWidth, viewHeight);
 	}
 
+	/**
+	 * add a GameObject to the 'world', aligned to the tile (tileX,tileY)
+	 *
+	 * @param obj
+	 * @param tileX
+	 * @param tileY
+	 */
 	protected void mapToTile(GameObject obj, int tileX, int tileY) {
 		int tileSize = uptile.getTileMap().getTileSize();
 		uptile.addGameObject(obj, tileX * tileSize, backgroundImage.height - tileY * tileSize);
 	}
 
+	/**
+	 * add all desired GameObjects to the 'world'
+	 */
 	protected abstract void addGameObjects();
 
 }

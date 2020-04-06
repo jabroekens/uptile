@@ -20,6 +20,7 @@ import processing.core.PVector;
 
 public class Player extends AnimatedSpriteObject implements ICollidableWithGameObjects, ICollidableWithTiles, IAlarmListener, Audible {
 
+	// static to preserve memory; all instances of this class use the same sprite and speeds
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/bunny.png"));
 	private static final float[] SPEEDS = { 3.0F, 8.0F };
 
@@ -64,7 +65,7 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 		}
 
 		if (getX() >= uptile.getView().getWorldWidth() - getWidth()) {
-			setX(uptile.getViewWidth() - getWidth());
+			setX(uptile.getView().getViewport().getZoomWidth() - getWidth());
 		}
 
 		if (getY() <= 0) {
@@ -81,6 +82,7 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 		for (GameObject obj : collidedGameObjects) {
 			if (obj instanceof Launchpad) {
 				canMove = true;
+				canJump = true;
 			}
 
 			if (obj instanceof Monster) {
@@ -138,7 +140,7 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 		switch (key) {
 		case 'a':
 			if (canMove) {
-				setDirectionSpeed(-90, Player.SPEEDS[0]);
+				setDirectionSpeed(-90, canJump ? Player.SPEEDS[0] : Player.SPEEDS[0] * 1.8F);
 				setCurrentFrameIndex(6);
 
 				alarms[0].startIfNotRunning();
@@ -148,7 +150,7 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 			break;
 		case 'd':
 			if (canMove) {
-				setDirectionSpeed(90, Player.SPEEDS[0]);
+				setDirectionSpeed(90, canJump ? Player.SPEEDS[0] : Player.SPEEDS[0] * 1.8F);
 				setCurrentFrameIndex(3);
 
 				alarms[1].startIfNotRunning();
@@ -162,6 +164,7 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 				setCurrentFrameIndex(1);
 				sounds[1].play(0);
 				canJump = false;
+				canMove = true;
 			}
 			break;
 		default:
@@ -178,22 +181,37 @@ public class Player extends AnimatedSpriteObject implements ICollidableWithGameO
 		}
 	}
 
+	/**
+	 * @return player's score
+	 */
 	public int getScore() {
 		return score;
 	}
 
+	/**
+	 * @param score sets player's score
+	 */
 	public void setScore(int score) {
 		this.score = score;
 	}
 
+	/**
+	 * @return player's level
+	 */
 	public int getLevel() {
 		return level;
 	}
 
+	/**
+	 * @param level sets player's level
+	 */
 	public void setLevel(int level) {
 		this.level = level;
 	}
 
+	/**
+	 * sets player's score and level to 0, and restarts the level
+	 */
 	public void respawn() {
 		score = 0;
 		level = 0;

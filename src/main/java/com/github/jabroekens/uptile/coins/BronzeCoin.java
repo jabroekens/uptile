@@ -5,6 +5,7 @@ import nl.han.ica.oopg.objects.Sprite;
 
 public class BronzeCoin extends Coin {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/coin_bronze.png"));
 
 	public BronzeCoin(Uptile uptile) {

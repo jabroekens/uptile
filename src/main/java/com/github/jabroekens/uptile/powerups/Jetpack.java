@@ -7,6 +7,7 @@ import nl.han.ica.oopg.sound.Sound;
 
 public class Jetpack extends Powerup {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/item_jetpack.png"));
 
 	public Jetpack(Uptile uptile) {

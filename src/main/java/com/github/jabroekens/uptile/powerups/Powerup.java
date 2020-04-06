@@ -37,6 +37,10 @@ public abstract class Powerup extends SpriteObject implements ICollidableWithGam
 		}
 	}
 
+	/**
+	 * actions to happen when a player picks up (activates) a power-up
+	 * @param player player who used the power-up
+	 */
 	protected abstract void usePowerup(Player player);
 
 	@Override

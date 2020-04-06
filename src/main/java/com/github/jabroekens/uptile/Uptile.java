@@ -10,6 +10,10 @@ import processing.core.PApplet;
 @SuppressWarnings("serial")
 public class Uptile extends GameEngine {
 
+	/**
+	 * path to media location
+	 * made static (global) as it's a constant used by other classes
+	 */
 	public static final String MEDIA_URL = "com/github/jabroekens/uptile/media/";
 
 	public static void main(String[] args) {
@@ -40,25 +44,23 @@ public class Uptile extends GameEngine {
 		}
 	}
 
+	/**
+	 * @return Player
+	 */
 	public Player getPlayer() {
 		return player;
 	}
 
-	public int getViewWidth() {
-		return levels[player.getLevel()].getViewWidth();
-	}
-
-	public int getViewHeight() {
-		return levels[player.getLevel()].getViewHeight();
-	}
-
+	/**
+	 * Load and unload current level, effectively restarting it
+	 */
 	public void reloadLevel() {
 		levels[player.getLevel()].unload();
 		levels[player.getLevel()].load();
 	}
 
 	private void createDashboard() {
-		Dashboard db = new Dashboard(0, 0, getViewWidth(), 60);
+		Dashboard db = new Dashboard(0, 0, getView().getViewport().getZoomWidth(), 60);
 
 		ScoreIcon icon = new ScoreIcon();
 		db.addGameObject(icon, 10, 10);

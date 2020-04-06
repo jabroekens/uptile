@@ -54,6 +54,9 @@ public abstract class Coin extends AnimatedSpriteObject implements ICollidableWi
 		nextFrame();
 	}
 
+	/**
+	 * @return amount of points the coin is worth
+	 */
 	public int getCoinWorth() {
 		return coinWorth;
 	}

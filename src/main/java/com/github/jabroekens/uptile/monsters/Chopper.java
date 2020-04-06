@@ -8,6 +8,7 @@ import nl.han.ica.oopg.sound.Sound;
 
 public class Chopper extends Monster implements IAlarmListener {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/chopper.png"));
 
 	private Alarm alarm = new Alarm(null, 2);

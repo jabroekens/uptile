@@ -9,6 +9,7 @@ import processing.core.PVector;
 
 public class BreakableFloorTile extends FloorTile implements IAlarmListener {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	public static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/tile_breakable.png"));
 
 	private Uptile uptile;
@@ -32,6 +33,10 @@ public class BreakableFloorTile extends FloorTile implements IAlarmListener {
 		}
 	}
 
+	/**
+	 * start timer that breaks (removes) the tile when it's finished
+	 * @param uptile
+	 */
 	public void breakTile(Uptile uptile) {
 		this.uptile = uptile;
 		alarm.startIfNotRunning();

@@ -12,6 +12,7 @@ import nl.han.ica.oopg.view.Viewport;
 
 public class Lightning extends Powerup {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/item_lightning.png"));
 
 	public Lightning(Uptile uptile) {

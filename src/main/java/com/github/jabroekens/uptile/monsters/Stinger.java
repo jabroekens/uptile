@@ -8,9 +8,10 @@ import nl.han.ica.oopg.sound.Sound;
 
 public class Stinger extends Monster implements IAlarmListener {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/stinger.png"));
 
-	private Alarm moveAlarm = new Alarm(null, 1);
+	private Alarm moveAlarm = new Alarm(null, 0.5);
 	private Alarm frameAlarm = new Alarm("frame", 0.2);
 	private boolean goingLeft;
 

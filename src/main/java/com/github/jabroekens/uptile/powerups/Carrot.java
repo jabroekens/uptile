@@ -7,6 +7,7 @@ import nl.han.ica.oopg.sound.Sound;
 
 public class Carrot extends Powerup {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/item_carrot.png"));
 
 	public Carrot(Uptile uptile) {

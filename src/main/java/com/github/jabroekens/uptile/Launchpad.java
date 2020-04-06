@@ -11,6 +11,7 @@ import nl.han.ica.oopg.sound.Sound;
 
 public class Launchpad extends AnimatedSpriteObject implements ICollidableWithGameObjects, IAlarmListener, Audible {
 
+	// static to preserve memory; all instances of this class use the same sprite
 	private static final Sprite SPRITE = new Sprite(Uptile.MEDIA_URL.concat("img/launchpad.png"));
 
 	private Alarm alarm = new Alarm(null, 0.05);
